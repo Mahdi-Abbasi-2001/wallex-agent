@@ -132,8 +132,9 @@ class SpotLive:
     """Real SPOT broker for the challenge account (long only, no leverage). Same interface as PaperFutures.
     Entry/exit are marketable LIMIT orders (price control + 2%-market-order rule safe), market fallback on exit.
     Stop/take are enforced by the bot loop (sync), checked every tick on bid/ask. (verify) order-response field names on the first real order."""
-    def __init__(self, w: Wallex, cfg, path="logs/spot_positions.json"):
+    def __init__(self, w: Wallex, cfg, path=None):
         import json, os
+        path = path or os.path.join(cfg.log_dir, "spot_positions.json")          # on the persistent disk with the other logs (survives restarts)
         self.w, self.cfg, self.path, self.history, self.next_id = w, cfg, path, [], 1
         self.meta = {s: m for s, m in w.markets().items()}
         self.pos = {int(k): v for k, v in (json.load(open(path)) if os.path.exists(path) else {}).items()}
@@ -164,14 +165,17 @@ class SpotLive:
     def open(self, market, side, collateral, risk_coef, price, stop_loss, take_profit, now=None):
         assert side == "long", "spot account is long only"
         qty = self._qty(market, collateral / price); cid = f"BOT{int(time.time()*1000)}B"
+        t0 = time.time()
         code, body = self.w.place_order(market, "BUY", "LIMIT", qty, price=self._px(market, price), client_id=cid)
+        t_ack = time.time()
         if code >= 300: raise RuntimeError(f"buy rejected {code} {body}")
         o = self._wait(cid); q, px = self._filled(o)
         if q < qty: self.w.cancel_order(cid); o = self._wait(cid, 4); q, px = self._filled(o)
         if q <= 0: raise RuntimeError("buy not filled")
+        lat = {"ack_s": round(t_ack - t0, 3), "fill_s": round(time.time() - t0, 3), "orders": 1, "client_id": cid}
         pid = self.next_id; self.next_id += 1
         self.pos[pid] = {"id": pid, "market": market, "side": "long", "collateral": q * px, "risk_coef": 1.0, "entry": px, "qty": q, "stop": stop_loss, "take": take_profit,
-                         "state": "open", "opened_ts": now or time.time(), "profit": 0.0, "close_reason": None}
+                         "state": "open", "opened_ts": now or time.time(), "profit": 0.0, "close_reason": None, "latency": lat}
         self._save(); return dict(self.pos[pid])
 
     def _px(self, market, price):
@@ -184,21 +188,23 @@ class SpotLive:
     def sell_all(self, market, qty, price):
         """Sell `qty` for toman with escalating marketable limit orders (most TMN markets do not accept MARKET orders);
         MARKET only as the last step where Wallex enables it. Returns (filled_qty, avg_price)."""
-        done = val = 0.0; min_notional = float(self.meta[market].get("minNotional") or 50_000)
+        done = val = 0.0; min_notional = float(self.meta[market].get("minNotional") or 50_000); t0 = time.time(); acks, n = [], 0
         for k, disc in enumerate((0.0, 0.002, 0.005, 0.01, 0.02)):
             left = self._qty(market, qty - done)
             ref = self._best_bid(market) or price
             if left <= 0 or left * ref < min_notional: break
             cid = f"BOT{int(time.time() * 1000)}S{k}"
-            code, body = self.w.place_order(market, "SELL", "LIMIT", left, price=self._px(market, ref * (1 - disc)), client_id=cid)
+            ta = time.time(); code, body = self.w.place_order(market, "SELL", "LIMIT", left, price=self._px(market, ref * (1 - disc)), client_id=cid)
+            acks.append(round(time.time() - ta, 3)); n += 1
             if code >= 300: continue
             o = self._wait(cid, 6); q, px = self._filled(o)
             if q < left: self.w.cancel_order(cid); o = self._wait(cid, 3); q, px = self._filled(o)
             done += q; val += q * px
         left = self._qty(market, qty - done)
         if left > 0 and self.meta[market].get("isMarketTypeEnable") and left * price >= min_notional:
-            cid = f"BOT{int(time.time() * 1000)}SM"; self.w.place_order(market, "SELL", "MARKET", left, client_id=cid)
+            cid = f"BOT{int(time.time() * 1000)}SM"; ta = time.time(); self.w.place_order(market, "SELL", "MARKET", left, client_id=cid); acks.append(round(time.time() - ta, 3)); n += 1
             q, px = self._filled(self._wait(cid, 8)); done += q; val += q * (px or price)
+        self.last_sell = {"ack_s": max(acks) if acks else None, "fill_s": round(time.time() - t0, 3), "orders": n}
         return done, (val / done if done else 0.0)
 
     def close(self, pid, price, now=None, reason="manual"):
@@ -207,7 +213,7 @@ class SpotLive:
         q, px = self.sell_all(p["market"], min(p["qty"], held), price)
         if q <= 0: raise RuntimeError("sell not filled")
         pnl = q * (px - p["entry"]) - (p["collateral"] + q * px) * self.cfg.trade_fee
-        self.pos.pop(pid); out = {**p, "state": "closed", "close_price": px, "close_reason": reason, "profit": pnl, "closed_ts": now or time.time(), "unsold_qty": max(0.0, p["qty"] - q)}
+        self.pos.pop(pid); out = {**p, "state": "closed", "close_price": px, "close_reason": reason, "profit": pnl, "closed_ts": now or time.time(), "unsold_qty": max(0.0, p["qty"] - q), "latency": getattr(self, "last_sell", None)}
         self.history.append(out); self._save(); return out
 
     def leftovers(self, prices):

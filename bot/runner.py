@@ -10,12 +10,30 @@ from agent.wallex_client import Wallex
 from .agents import Brain
 from .config import Config
 from .futures import PaperFutures, SpotLive
+from .health import STATUS, serve
 from .log import Log
 from .mcp import WallexMCP
 from .risk import RiskGuard, phase
 from .external import LiveExternal
 from .signals import Candles, candidates, features, regime
 from .state import State, killed
+
+
+def code_version():
+    """Which code is running: git commit (+ dirty flag) when available, else GIT_COMMIT from the deploy, plus a hash of the bot's source
+    files so the logs prove the submitted code is the code that traded."""
+    import hashlib, subprocess
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    h = hashlib.sha256()
+    for d in ("bot", "agent"):
+        for f in sorted(os.listdir(os.path.join(root, d))):
+            if f.endswith((".py", ".txt")): h.update(f.encode()); h.update(open(os.path.join(root, d, f), "rb").read())
+    out = {"source_sha256": h.hexdigest()[:16], "git_commit": os.getenv("GIT_COMMIT")}
+    try:
+        out["git_commit"] = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=root, capture_output=True, text=True, timeout=5).stdout.strip() or out["git_commit"]
+        out["git_dirty"] = bool(subprocess.run(["git", "status", "--porcelain", "bot", "agent"], cwd=root, capture_output=True, text=True, timeout=5).stdout.strip())
+    except Exception: pass
+    return out
 
 
 def quotes_for(w, universe):
@@ -54,7 +72,8 @@ class Bot:
         except Exception as e:
             self.log.decision("close_failed", id=pos["id"], market=pos["market"], error=repr(e)); return
         self.guard.post_close(pos, now)
-        self.log.decision("close", id=pos["id"], market=pos["market"], side=pos["side"], why=why, price=self.exit_price(pos, q), pnl=res.get("profit"), meta=self.st["meta"].get(str(pos["id"])))
+        self.log.decision("close", id=pos["id"], market=pos["market"], side=pos["side"], why=why, price=res.get("close_price", self.exit_price(pos, q)), pnl=res.get("profit"),
+                          latency=res.get("latency"), meta=self.st["meta"].get(str(pos["id"])))
 
     def equity(self): return self.broker.equity(self.last_quotes)
 
@@ -67,6 +86,7 @@ class Bot:
             self.log.decision("close", id=c["id"], market=c["market"], side=c["side"], why=c["close_reason"], price=c.get("close_price"), pnl=c.get("profit"), meta=self.st["meta"].get(str(c["id"])))
         eq = self.equity(); info = self.guard.update_equity(eq, now); ph = phase(cfg, now)
         positions = self.broker.positions()
+        STATUS.update(last_tick=now, equity=round(eq), ret=round(info["ret"], 5), dd=round(info["dd"], 5), phase=ph, open=len(positions), halted=self.st["halted"], mode="live" if self.live else "shadow")
         self.log.equity(equity=round(eq), ret=round(info["ret"], 5), dd=round(info["dd"], 5), phase=ph, open=len(positions), halted=self.st["halted"])
         if info["halt"]: self.log.decision("halt", reason=info["halt"], equity=eq)
         if cfg.trail: self.trail_stops(positions)
@@ -159,11 +179,11 @@ class Bot:
         if not sized: self.log.decision("reject", stage="risk_guard", proposal=o, reason=why); return
         rev = self.brain.reviewer({**prop, "ai_reason": o.get("reason")}, {"size_toman": sized.exposure, "share_of_equity": round(sized.exposure / eq, 3), "conviction": prop["conviction"], "risk_toman_if_stopped": sized.risk_toman}, ctx)
         if not rev or not rev.get("approve"): self.log.decision("reject", stage="reviewer", proposal=o, review=rev); return
-        dry = None
         try: pos = self.broker.open(prop["market"], prop["side"], sized.collateral, sized.risk_coef, prop["entry"], sized.stop_price, sized.take_price, now)
         except Exception as e: self.log.decision("open_failed", proposal=o, error=repr(e)); return
         self.st["meta"][str(pos["id"])] = {"reason": o.get("reason"), "review": rev, "opened_ts": now, "signal": cand}
-        self.log.decision("open", id=pos["id"], proposal=o, signal=cand, sized=sized.__dict__, review=rev, dry_run=dry, ai_reason=o.get("reason"))
+        self.log.decision("open", id=pos["id"], proposal=o, signal=cand, sized=sized.__dict__, review=rev, ai_reason=o.get("reason"),
+                          fill={"price": pos.get("entry"), "qty": pos.get("qty"), "toman": pos.get("collateral")}, latency=pos.get("latency"))
 
     def reflect(self, now):
         if self.cfg.ai_data != "full": return                       # lean setups: no self-tuning (reproducible behaviour)
@@ -187,7 +207,11 @@ class Bot:
 
     def run(self):
         cfg = self.cfg
-        self.log.decision("start", mode="live" if self.live else "shadow", universe=cfg.universe, end=cfg.challenge_end, ai=bool(self.brain))
+        if os.getenv("PORT"):
+            try: serve(os.getenv("PORT"))
+            except Exception as e: self.log.decision("health_endpoint_failed", error=repr(e))   # never let the status page stop trading
+        self.log.decision("start", mode="live" if self.live else "shadow", universe=cfg.universe, end=cfg.challenge_end, ai=bool(self.brain),
+                          model=getattr(getattr(self.brain, "llm", None), "model", None), code=code_version(), config={k: v for k, v in cfg.__dict__.items() if k not in ("universe",)})
         self.mcp_account_check()
         while True:
             now = time.time()
