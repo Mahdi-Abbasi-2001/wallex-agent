@@ -22,7 +22,7 @@ step = 10 ** -int(sl.meta[MARKET]["stepSize"]); min_notional = float(sl.meta[MAR
 while sl._qty(MARKET, q * (1 - 0.003)) * bid < min_notional * 1.01 or q * ask < min_notional * 1.01: q = round(q + step, 8)
 AMOUNT = q * ask
 print(f"{MARKET} bid {bid} ask {ask} stepSize {sl.meta[MARKET]['stepSize']} minNotional {sl.meta[MARKET]['minNotional']}")
-print(f"plan: BUY ~{AMOUNT:,} TMN at {ask} (qty {sl._qty(MARKET, AMOUNT / ask)}), then SELL it back at the bid")
+print(f"plan: BUY ~{AMOUNT:,.0f} TMN at {ask} (qty {sl._qty(MARKET, AMOUNT / ask)}), then SELL it back at the bid")
 if "--execute" not in sys.argv:
     sys.exit("dry: add --execute to place the two orders")
 
