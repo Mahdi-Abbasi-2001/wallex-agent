@@ -1,6 +1,6 @@
 """One minimum-size round trip through the bot's own order code, to verify order/fill fields before any strategy runs.
  python scripts/test_trade.py            -> shows what it would do (no orders)
- python scripts/test_trade.py --execute  -> buys ~100,000 TMN of USDTTMN, sells it back, prints raw order responses"""
+ python scripts/test_trade.py --execute  -> buys ~60,000 TMN of USDTTMN, sells it back, prints raw order responses"""
 import json
 import sys
 import time
@@ -13,7 +13,7 @@ from agent.wallex_client import Wallex
 from bot.config import Config
 from bot.futures import SpotLive
 
-MARKET, AMOUNT = "USDTTMN", 100_000
+MARKET, AMOUNT = "USDTTMN", 60_000
 w = Wallex(); sl = SpotLive(w, Config(), path="logs/test_trade_positions.json")
 st = sl.meta[MARKET]["stats"]; bid, ask = float(st["bidPrice"]), float(st["askPrice"])
 print(f"{MARKET} bid {bid} ask {ask} stepSize {sl.meta[MARKET]['stepSize']} minNotional {sl.meta[MARKET]['minNotional']}")
