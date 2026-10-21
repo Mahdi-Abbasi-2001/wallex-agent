@@ -132,6 +132,7 @@ class Bot:
             try: ext_all, _ = self.ext.get(now, list(feats))
             except Exception: ext_all = {}
         reg, cands = candidates(feats, self.last_quotes, cfg, st["params"].get("min_score", 1.0), ext_all)
+        cands = [c for c in cands if c["market"] not in st.get("refused", [])]
         feasible = [c for c in cands if c["stop_pct"] * cfg.min_exposure <= cfg.max_risk_pct * eq]
         if len(feasible) < len(cands): self.log.decision("filtered", dropped=[c["market"] for c in cands if c not in feasible], why="min position size makes the stop too risky for this account")
         cands = feasible
@@ -180,7 +181,11 @@ class Bot:
         rev = self.brain.reviewer({**prop, "ai_reason": o.get("reason")}, {"size_toman": sized.exposure, "share_of_equity": round(sized.exposure / eq, 3), "conviction": prop["conviction"], "risk_toman_if_stopped": sized.risk_toman}, ctx)
         if not rev or not rev.get("approve"): self.log.decision("reject", stage="reviewer", proposal=o, review=rev); return
         try: pos = self.broker.open(prop["market"], prop["side"], sized.collateral, sized.risk_coef, prop["entry"], sized.stop_price, sized.take_price, now)
-        except Exception as e: self.log.decision("open_failed", proposal=o, error=repr(e)); return
+        except Exception as e:
+            self.log.decision("open_failed", proposal=o, error=repr(e))
+            if "امکان ثبت سفارش" in repr(e) or "symbol" in repr(e):     # Wallex refuses this market for the account: never propose it again
+                self.st.d.setdefault("refused", []).append(prop["market"]); self.log.decision("market_refused", market=prop["market"])
+            return
         self.st["meta"][str(pos["id"])] = {"reason": o.get("reason"), "review": rev, "opened_ts": now, "signal": cand}
         self.log.decision("open", id=pos["id"], proposal=o, signal=cand, sized=sized.__dict__, review=rev, ai_reason=o.get("reason"),
                           fill={"price": pos.get("entry"), "qty": pos.get("qty"), "toman": pos.get("collateral")}, latency=pos.get("latency"))
