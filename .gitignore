@@ -12,3 +12,4 @@ logs/KILL
 logs/*.tmp
 logs/test_trade_positions.json
 logs/*.out
+bot/GIT_COMMIT

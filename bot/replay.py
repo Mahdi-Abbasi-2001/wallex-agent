@@ -151,7 +151,7 @@ class ReplayBot(Bot):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--days", type=float, default=3); ap.add_argument("--rules", action="store_true")
-    ap.add_argument("--model", default=os.getenv("BOT_MODEL", "gpt-5.4-mini")); ap.add_argument("--out", default=None); ap.add_argument("--end", type=int, default=None)
+    ap.add_argument("--model", default=os.getenv("BOT_MODEL")); ap.add_argument("--out", default=None); ap.add_argument("--end", type=int, default=None)
     ap.add_argument("--entry", default="pullback"); ap.add_argument("--tp", type=float, default=2.0); ap.add_argument("--trail", action="store_true"); ap.add_argument("--decide", type=int, default=1800)
     ap.add_argument("--gate", default="strict"); ap.add_argument("--maxpos", type=int, default=2); ap.add_argument("--dlcap", type=float, default=0.01); ap.add_argument("--fetch-only", action="store_true"); ap.add_argument("--data", default="lean"); ap.add_argument("--posfrac", type=float, default=0.33)
     a = ap.parse_args(); load_env()

@@ -28,7 +28,8 @@ def code_version():
     for d in ("bot", "agent"):
         for f in sorted(os.listdir(os.path.join(root, d))):
             if f.endswith((".py", ".txt")): h.update(f.encode()); h.update(open(os.path.join(root, d, f), "rb").read())
-    out = {"source_sha256": h.hexdigest()[:16], "git_commit": os.getenv("GIT_COMMIT")}
+    vf = os.path.join(root, "bot", "GIT_COMMIT")                       # written at deploy time (the upload has no .git)
+    out = {"source_sha256": h.hexdigest()[:16], "git_commit": open(vf).read().strip() if os.path.exists(vf) else os.getenv("GIT_COMMIT")}
     try:
         out["git_commit"] = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=root, capture_output=True, text=True, timeout=5).stdout.strip() or out["git_commit"]
         out["git_dirty"] = bool(subprocess.run(["git", "status", "--porcelain", "bot", "agent"], cwd=root, capture_output=True, text=True, timeout=5).stdout.strip())
@@ -251,7 +252,7 @@ class Bot:
 
 def main(argv=None):
     ap = argparse.ArgumentParser(); ap.add_argument("--mode", default="shadow", choices=["shadow", "live"]); ap.add_argument("--confirm-live", action="store_true")
-    ap.add_argument("--provider", default=None); ap.add_argument("--model", default=os.getenv("BOT_MODEL", "gpt-5.4-mini")); ap.add_argument("--no-llm", action="store_true")
+    ap.add_argument("--provider", default=None); ap.add_argument("--model", default=os.getenv("BOT_MODEL"))   # None -> the provider's model from the environment (BOXAPI_MODEL / OPENAI_MODEL); ap.add_argument("--no-llm", action="store_true")
     a = ap.parse_args(argv); load_env()
     if a.mode == "live" and not (a.confirm_live and os.getenv("CONFIRM_LIVE") == "yes"):
         sys.exit("live mode needs --confirm-live and CONFIRM_LIVE=yes in the environment")
