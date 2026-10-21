@@ -177,8 +177,10 @@ class SpotLive:
         if q < qty: self.w.cancel_order(cid); o = self._wait(cid, 4); q, px = self._filled(o)
         if q <= 0: raise RuntimeError("buy not filled")
         lat = {"ack_s": round(t_ack - t0, 3), "fill_s": round(time.time() - t0, 3), "orders": 1, "client_id": cid}
+        base = market[:-3]; fee_coin = sum(float(f.get("fee") or 0) for f in (o.get("fills") or []) if f.get("feeAsset") == base)
+        q_net = q - fee_coin                                    # Wallex takes the buy fee in the coin: hold what is really in the wallet
         pid = self.next_id; self.next_id += 1
-        self.pos[pid] = {"id": pid, "market": market, "side": "long", "collateral": q * px, "risk_coef": 1.0, "entry": px, "qty": q, "stop": stop_loss, "take": take_profit,
+        self.pos[pid] = {"id": pid, "market": market, "side": "long", "collateral": q * px, "risk_coef": 1.0, "entry": px, "qty": q_net, "buy_fee_coin": fee_coin, "stop": stop_loss, "take": take_profit,
                          "state": "open", "opened_ts": now or time.time(), "profit": 0.0, "close_reason": None, "latency": lat}
         self._save(); return dict(self.pos[pid])
 
