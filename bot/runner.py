@@ -252,7 +252,7 @@ class Bot:
 
 def main(argv=None):
     ap = argparse.ArgumentParser(); ap.add_argument("--mode", default="shadow", choices=["shadow", "live"]); ap.add_argument("--confirm-live", action="store_true")
-    ap.add_argument("--provider", default=None); ap.add_argument("--model", default=os.getenv("BOT_MODEL"))   # None -> the provider's model from the environment (BOXAPI_MODEL / OPENAI_MODEL); ap.add_argument("--no-llm", action="store_true")
+    ap.add_argument("--provider", default=None); ap.add_argument("--model", default=os.getenv("BOT_MODEL")); ap.add_argument("--no-llm", action="store_true")   # --model None -> provider's BOXAPI_MODEL / OPENAI_MODEL
     a = ap.parse_args(argv); load_env()
     if a.mode == "live" and not (a.confirm_live and os.getenv("CONFIRM_LIVE") == "yes"):
         sys.exit("live mode needs --confirm-live and CONFIRM_LIVE=yes in the environment")
