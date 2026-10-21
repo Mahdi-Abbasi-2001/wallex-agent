@@ -74,7 +74,7 @@ bot.try_open({"market": "BTCTMN", "side": "long", "lev": 2, "reason": "t"}, fake
 assert len(bot.broker.positions()) == 1
 lines = open(os.path.join(tmp, "decisions.jsonl")).read(); assert "\"kind\": \"open\"" in lines and "\"approve\": true" in lines
 bot.cfg.challenge_end = now + 20 * 60; bot.tick  # unwind phase -> positions closed via tick
-import bot.runner as R; R.quotes_for = lambda w, u: {"BTCTMN": (99.9, 100.1)}
+import bot.runner as R; R.quotes_for = lambda w, u: {"BTCTMN": (99.9, 100.1)}; R.quote_one = lambda w, m: (99.9, 100.1)
 bot.tick(now); assert not bot.broker.positions(), "unwind must flatten"
 assert '"why": "end_game_unwind"' in open(os.path.join(tmp, "decisions.jsonl")).read()
 open(cfg.kill_file, "w").write("x"); bot.broker.open("BTCTMN", "long", 1_500_000, 2, 100.0, 98, 103, now); bot.cfg.challenge_end = now + 40 * 3600; bot.tick(now); assert not bot.broker.positions()

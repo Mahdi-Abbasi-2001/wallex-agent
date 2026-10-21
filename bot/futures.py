@@ -159,14 +159,18 @@ class SpotLive:
     @staticmethod
     def _filled(o):
         q = float(o.get("executedQty") or o.get("executed_qty") or 0)
-        px = float(o.get("executedPrice") or o.get("avgPrice") or o.get("price") or 0)
+        val = float(o.get("executedSum") or 0)
+        px = val / q if q > 0 and val > 0 else float(o.get("executedPrice") or o.get("price") or 0)   # executedPrice echoes the limit price even when unfilled
         return q, px
 
     def open(self, market, side, collateral, risk_coef, price, stop_loss, take_profit, now=None):
         assert side == "long", "spot account is long only"
-        qty = self._qty(market, collateral / price); cid = f"BOT{int(time.time()*1000)}B"
+        try: price = max(price, float(self.w.depth(market)["ask"][0]["price"]))          # live best ask at order time
+        except Exception: pass
+        limit = price * 1.001                                                            # marketable limit: fills now, caps slippage at 0.1%
+        qty = self._qty(market, collateral / limit); cid = f"BOT{int(time.time()*1000)}B"
         t0 = time.time()
-        code, body = self.w.place_order(market, "BUY", "LIMIT", qty, price=self._px(market, price), client_id=cid)
+        code, body = self.w.place_order(market, "BUY", "LIMIT", qty, price=self._px(market, limit), client_id=cid)
         t_ack = time.time()
         if code >= 300: raise RuntimeError(f"buy rejected {code} {body}")
         o = self._wait(cid); q, px = self._filled(o)
@@ -222,7 +226,7 @@ class SpotLive:
         for asset, b in self.w.balances().items():
             v = float(b.get("value", 0) or 0); m = asset + "TMN"
             if asset != "TMN" and v > 0 and m in self.meta:
-                val = v * (prices.get(m, (0, 0))[0] or float(self.meta[m].get("stats", {}).get("bidPrice") or 0))
+                val = v * (prices.get(m, (0, 0))[0] or self._best_bid(m) or 0)
                 out[m] = (v, val)
         return out
 

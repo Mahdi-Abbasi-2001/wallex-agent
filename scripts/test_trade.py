@@ -15,7 +15,7 @@ from bot.futures import SpotLive
 
 MARKET = sys.argv[sys.argv.index("--market") + 1] if "--market" in sys.argv else "BTCTMN"   # USDTTMN is refused for the challenge account
 w = Wallex(); sl = SpotLive(w, Config(), path="logs/test_trade_positions.json")
-st = sl.meta[MARKET]["stats"]; bid, ask = float(st["bidPrice"]), float(st["askPrice"])
+d = w.depth(MARKET); bid, ask = float(d["bid"][0]["price"]), float(d["ask"][0]["price"])   # live book, not the lagging market list
 # Smallest buy whose remainder, after a 0.3% fee possibly taken in the coin and rounding down to the step, is still above
 # Wallex's minimum order value at the bid, so it can always be sold back.
 step = 10 ** -int(sl.meta[MARKET]["stepSize"]); min_notional = float(sl.meta[MARKET]["minNotional"]); q = step
@@ -35,6 +35,6 @@ p = sl.open(MARKET, "long", AMOUNT, 1, ask, 0, 0)
 print("POSITION", p)
 print("balances after buy", {k: v["value"] for k, v in w.balances().items() if float(v["value"] or 0) > 0})
 time.sleep(2)
-c = sl.close(p["id"], float(w.markets()[MARKET]["stats"]["bidPrice"]))
+c = sl.close(p["id"], float(w.depth(MARKET)["bid"][0]["price"]))
 print("CLOSED", {k: c[k] for k in ("entry", "qty", "close_price", "profit")})
 print("balances after sell", {k: v["value"] for k, v in w.balances().items() if float(v["value"] or 0) > 0})

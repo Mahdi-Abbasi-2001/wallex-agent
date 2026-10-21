@@ -37,12 +37,19 @@ def code_version():
 
 
 def quotes_for(w, universe):
-    m = w.markets(); q = {}
+    """Live best bid/ask for every market in one call (/v2/depth/all). The /v1/markets price stats lag by minutes, so they are never used for trading."""
+    code, body = w._req("GET", "/v2/depth/all")
+    allq, q = (body or {}).get("result") or {}, {}
     for s in universe:
-        st = (m.get(s) or {}).get("stats") or {}
-        try: q[s] = (float(st["bidPrice"]), float(st["askPrice"]))
+        d = allq.get(s) or {}
+        try: q[s] = (float(d["bid"][0]["price"]), float(d["ask"][0]["price"]))
         except Exception: pass
     return q
+
+
+def quote_one(w, market):
+    d = w.depth(market)
+    return float(d["bid"][0]["price"]), float(d["ask"][0]["price"])
 
 
 class Bot:
@@ -60,7 +67,18 @@ class Bot:
         self.last_quotes = {}
 
     # ---- helpers ----
-    def quotes(self, now): return quotes_for(self.w, self.cfg.universe)
+    def quotes(self, now):
+        """Every tick: fresh order books only for the coins held (stops/targets). The full universe is refreshed by decide()."""
+        q = dict(self.last_quotes)
+        if not q: q.update(quotes_for(self.w, self.cfg.universe))
+        for p in self.broker.positions():
+            try: q[p["market"]] = quote_one(self.w, p["market"])
+            except Exception: pass
+        return q
+
+    def refresh_all_quotes(self):
+        try: self.last_quotes.update(quotes_for(self.w, self.cfg.universe))
+        except Exception as e: self.log.decision("quotes_failed", error=repr(e))
 
     def exit_price(self, pos, q): return q[0] if pos["side"] == "long" else q[1]
 
@@ -125,6 +143,7 @@ class Bot:
     def decide(self, now, eq):
         cfg, st = self.cfg, self.st
         if not self.brain: return
+        self.refresh_all_quotes()
         data = self.cand.update(now)
         feats = {s: features(df) for s, df in data.items()}; feats = {k: v for k, v in feats.items() if v}
         ext_all = None
