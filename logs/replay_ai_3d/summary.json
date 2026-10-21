@@ -1,0 +1,25 @@
+{
+ "mode": "ai:gpt-5.4-mini",
+ "start": 1792346400,
+ "end": 1792605600,
+ "final_equity": 4876138,
+ "return_pct": -2.48,
+ "max_drawdown_pct": 2.79,
+ "trades": 8,
+ "wins": 1,
+ "by_reason": {
+  "ai: PEPETMN 15m shows repeated rejection near 1.084 after the open; current 1.0737 is below entry 1.0718 only marginally in favor, and 4.4% stop vs ~0.6% costs leaves limited edge in a range regime.": 1,
+  "ai: WLDTMN is extended: price 137,796 is ~+4.6% above the proposed entry and has already risen to the top of the 15m range after the prior long is still down; with ~0.6% round-trip costs, reward looks poor versus a 2.6% stop.": 1,
+  "ai: WLDTMN is extended: 15m ran from 138,639 to 144,627, ~4.3% above the recent base and above the 144,824 entry zone. With ~0.6% round-trip costs and a 2.63% stop, the remaining upside is not clean enough for a fresh add.": 1,
+  "ai: PEPETMN just ran from 1.084 to 1.166 in 15m candles and is now below the local 1.176 entry; with ~0.6% round-trip cost, the extension raises pullback risk and the edge is weak.": 1,
+  "ai: WLDTMN is still up, but 15m is weakening: price fell from 153.98 to 152.546 after stalling, while the position is already losing. Better to cut and keep risk for a cleaner momentum setup.": 1,
+  "ai: PEPETMN 15m is choppy and below the earlier entry; after a 24h +8.15% move, the last candles lost momentum and sit near 1.1723 vs prior 1.1828 entry.": 1,
+  "ai: WLDTMN stalled after entry: 15m price rolled from 154101 to 150946, below entry 152625.9 and near the low. Existing loss is about -1.8% on price, so holding has poor near-term structure.": 1,
+  "ai: PEPETMN is extended: 15m moved from 1.176 to 1.2047 (+2.4%) after a sharp run, while the open long is still slightly red. Cost is ~0.6%, so fresh upside is not clear enough to add.": 1
+ },
+ "pnl_by_market": {
+  "PEPETMN": -63083.0,
+  "WLDTMN": -60779.0
+ },
+ "seconds": 723
+}

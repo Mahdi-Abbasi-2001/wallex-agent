@@ -1,0 +1,24 @@
+{
+ "mode": "ai:gpt-6-luna",
+ "start": 1790791200,
+ "end": 1791050400,
+ "final_equity": 5073678,
+ "return_pct": 1.47,
+ "max_drawdown_pct": 2.56,
+ "trades": 6,
+ "wins": 3,
+ "by_reason": {
+  "max_hold_time": 2,
+  "end_game_unwind": 2,
+  "ai: BTC is down 2.25% over 24h and below both its 20-hour (-1.27%) and 50-hour (-0.92%) averages, indicating a hard breakdown.": 1,
+  "ai: HYPETMN is below its 50h average (latest close ~22.30m vs average ~22.42m) and the last closes are falling.": 1
+ },
+ "pnl_by_market": {
+  "ADATMN": 25975.0,
+  "APETMN": -4591.0,
+  "BNBTMN": 55829.0,
+  "HYPETMN": -14120.0,
+  "XAUTTMN": 10586.0
+ },
+ "seconds": 638
+}

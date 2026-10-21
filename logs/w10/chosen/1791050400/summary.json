@@ -1,0 +1,23 @@
+{
+ "mode": "rules",
+ "start": 1790791200,
+ "end": 1791050400,
+ "final_equity": 5068371,
+ "return_pct": 1.37,
+ "max_drawdown_pct": 2.83,
+ "trades": 5,
+ "wins": 3.0,
+ "by_reason": {
+  "stop_loss": 2,
+  "max_hold_time": 1,
+  "take_profit": 1,
+  "end_game_unwind": 1
+ },
+ "pnl_by_market": {
+  "BNBTMN": 84108.0,
+  "PEPETMN": 101319.0,
+  "STMN": -89406.0,
+  "USOONTMN": -27650.0
+ },
+ "seconds": 16
+}

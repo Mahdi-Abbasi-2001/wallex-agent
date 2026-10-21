@@ -1,0 +1,17 @@
+{
+ "mode": "ai:gpt-6-luna",
+ "start": 1792346400,
+ "end": 1792605600,
+ "final_equity": 5022140,
+ "return_pct": 0.44,
+ "max_drawdown_pct": 0.17,
+ "trades": 1,
+ "wins": 1,
+ "by_reason": {
+  "take_profit": 1
+ },
+ "pnl_by_market": {
+  "BTCTMN": 22140.0
+ },
+ "seconds": 148
+}

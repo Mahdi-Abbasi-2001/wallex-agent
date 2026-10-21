@@ -1,0 +1,20 @@
+{
+ "mode": "rules",
+ "start": 1790013600,
+ "end": 1790272800,
+ "final_equity": 5191602,
+ "return_pct": 3.83,
+ "max_drawdown_pct": 2.03,
+ "trades": 3,
+ "wins": 2,
+ "by_reason": {
+  "max_hold_time": 2,
+  "take_profit": 1
+ },
+ "pnl_by_market": {
+  "AVAXTMN": -2735.0,
+  "HYPETMN": 54277.0,
+  "STMN": 140060.0
+ },
+ "seconds": 13
+}

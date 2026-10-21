@@ -1,0 +1,24 @@
+{
+ "mode": "rules",
+ "start": 1791568800,
+ "end": 1791828000,
+ "final_equity": 4868118,
+ "return_pct": -2.64,
+ "max_drawdown_pct": 4.0,
+ "trades": 6,
+ "wins": 1.0,
+ "by_reason": {
+  "stop_loss": 4,
+  "take_profit": 1,
+  "max_hold_time": 1
+ },
+ "pnl_by_market": {
+  "ARBTMN": -88432.0,
+  "BTCTMN": -47230.0,
+  "LTCTMN": -45338.0,
+  "STMN": 102810.0,
+  "USOONTMN": -23791.0,
+  "XAUTTMN": -29901.0
+ },
+ "seconds": 13
+}

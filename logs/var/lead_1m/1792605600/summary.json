@@ -1,0 +1,27 @@
+{
+ "mode": "rules",
+ "start": 1792346400,
+ "end": 1792605600,
+ "final_equity": 5204353,
+ "return_pct": 4.09,
+ "max_drawdown_pct": 3.06,
+ "trades": 12,
+ "wins": 9.0,
+ "by_reason": {
+  "take_profit": 6,
+  "max_hold_time": 3,
+  "end_game_unwind": 2,
+  "stop_loss": 1
+ },
+ "pnl_by_market": {
+  "APETMN": 10659.0,
+  "AVAXTMN": -28404.0,
+  "BNBTMN": 56901.0,
+  "PEPETMN": 65560.0,
+  "PUMPTMN": 66256.0,
+  "STMN": 25361.0,
+  "TRXTMN": -36898.0,
+  "WLDTMN": 44917.0
+ },
+ "seconds": 489
+}

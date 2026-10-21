@@ -1,0 +1,20 @@
+{
+ "mode": "rules",
+ "start": 1790013600,
+ "end": 1790272800,
+ "final_equity": 4751020,
+ "return_pct": -4.98,
+ "max_drawdown_pct": 5.11,
+ "trades": 4,
+ "wins": 1.0,
+ "by_reason": {
+  "stop_loss": 3,
+  "drawdown 5.2% >= 5%": 1
+ },
+ "pnl_by_market": {
+  "AVAXTMN": -87577.0,
+  "DOGETMN": 7610.0,
+  "PEPETMN": -169013.0
+ },
+ "seconds": 4
+}

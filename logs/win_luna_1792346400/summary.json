@@ -1,0 +1,18 @@
+{
+ "mode": "ai:gpt-6-luna",
+ "start": 1792087200,
+ "end": 1792346400,
+ "final_equity": 4924759,
+ "return_pct": -1.5,
+ "max_drawdown_pct": 1.5,
+ "trades": 2,
+ "wins": 0.0,
+ "by_reason": {
+  "ai: USOON is below its 20-hour average (~41.66M vs 41.43M) and the recent hourly trend has turned down.": 1,
+  "stop_loss": 1
+ },
+ "pnl_by_market": {
+  "USOONTMN": -75241.0
+ },
+ "seconds": 801
+}

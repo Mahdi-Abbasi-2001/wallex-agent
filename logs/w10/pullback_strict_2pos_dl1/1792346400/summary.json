@@ -1,0 +1,20 @@
+{
+ "mode": "rules",
+ "start": 1792087200,
+ "end": 1792346400,
+ "final_equity": 4940945,
+ "return_pct": -1.18,
+ "max_drawdown_pct": 1.43,
+ "trades": 3,
+ "wins": 0,
+ "by_reason": {
+  "max_hold_time": 2,
+  "end_game_unwind": 1
+ },
+ "pnl_by_market": {
+  "TRXTMN": -9203.0,
+  "USOONTMN": -20504.0,
+  "XAUTTMN": -29348.0
+ },
+ "seconds": 13
+}

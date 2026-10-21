@@ -1,0 +1,19 @@
+{
+ "mode": "ai:gpt-6-luna",
+ "start": 1790791200,
+ "end": 1791050400,
+ "final_equity": 5025192,
+ "return_pct": 0.5,
+ "max_drawdown_pct": 1.56,
+ "trades": 2,
+ "wins": 2,
+ "by_reason": {
+  "ai: Below its 20-hour average (\u22120.46%) with a sharp 6-hour decline (\u22122.03%), invalidating the recent uptrend.": 1,
+  "ai: Below its 20-hour average (\u22120.12%) with a sharp 6-hour decline (\u22121.95%), invalidating the recent uptrend.": 1
+ },
+ "pnl_by_market": {
+  "ETHTMN": 11363.0,
+  "XRPTMN": 13829.0
+ },
+ "seconds": 442
+}

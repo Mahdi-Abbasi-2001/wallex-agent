@@ -1,0 +1,18 @@
+{
+ "mode": "ai:gpt-6-luna",
+ "start": 1792346400,
+ "end": 1792605600,
+ "final_equity": 5087345,
+ "return_pct": 1.75,
+ "max_drawdown_pct": 0.89,
+ "trades": 2,
+ "wins": 1,
+ "by_reason": {
+  "ai: Market regime is down; BTC is below its 20- and 50-period averages and down over 6h and 24h.": 1,
+  "take_profit": 1
+ },
+ "pnl_by_market": {
+  "PEPETMN": 87345.0
+ },
+ "seconds": 1366
+}

@@ -1,0 +1,17 @@
+{
+ "mode": "ai:gpt-6-luna",
+ "start": 1790272800,
+ "end": 1790532000,
+ "final_equity": 4984917,
+ "return_pct": -0.3,
+ "max_drawdown_pct": 0.38,
+ "trades": 1,
+ "wins": 0,
+ "by_reason": {
+  "end_game_unwind": 1
+ },
+ "pnl_by_market": {
+  "USOONTMN": -15083.0
+ },
+ "seconds": 391
+}

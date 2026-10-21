@@ -1,0 +1,23 @@
+{
+ "mode": "ai:gpt-6-luna",
+ "start": 1791568800,
+ "end": 1791828000,
+ "final_equity": 4999530,
+ "return_pct": -0.01,
+ "max_drawdown_pct": 1.83,
+ "trades": 4,
+ "wins": 1.0,
+ "by_reason": {
+  "take_profit": 1,
+  "ai: USOONTMN is below its 50-hour average and the latest hourly close fell to 38.95M after a brief bounce.": 1,
+  "stop_loss": 1,
+  "ai: BTC has fallen 2.35% over 6h and is 1.62% below its 50-hour average, indicating a hard breakdown.": 1
+ },
+ "pnl_by_market": {
+  "ARBTMN": -64780.0,
+  "ETHTMN": -17717.0,
+  "STMN": 105280.0,
+  "USOONTMN": -23253.0
+ },
+ "seconds": 461
+}

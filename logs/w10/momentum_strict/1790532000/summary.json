@@ -1,0 +1,22 @@
+{
+ "mode": "rules",
+ "start": 1790272800,
+ "end": 1790532000,
+ "final_equity": 4827497,
+ "return_pct": -3.45,
+ "max_drawdown_pct": 5.15,
+ "trades": 8,
+ "wins": 2.0,
+ "by_reason": {
+  "max_hold_time": 3,
+  "drawdown 5.1% >= 5%": 3,
+  "stop_loss": 2
+ },
+ "pnl_by_market": {
+  "BCHTMN": 3681.0,
+  "LINKTMN": 4804.0,
+  "LTCTMN": -53031.0,
+  "PUMPTMN": -127957.0
+ },
+ "seconds": 13
+}

@@ -1,0 +1,20 @@
+{
+ "mode": "rules",
+ "start": 1792346400,
+ "end": 1792605600,
+ "final_equity": 5301217,
+ "return_pct": 6.02,
+ "max_drawdown_pct": 2.52,
+ "trades": 3,
+ "wins": 3,
+ "by_reason": {
+  "take_profit": 2,
+  "profit lock: up 6.0% >= 6%": 1
+ },
+ "pnl_by_market": {
+  "PEPETMN": 134638.0,
+  "PUMPTMN": 141000.0,
+  "SOLTMN": 25579.0
+ },
+ "seconds": 363
+}

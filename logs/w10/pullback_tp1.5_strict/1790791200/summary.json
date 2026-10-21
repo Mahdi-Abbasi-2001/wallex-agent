@@ -1,0 +1,26 @@
+{
+ "mode": "rules",
+ "start": 1790532000,
+ "end": 1790791200,
+ "final_equity": 5313002,
+ "return_pct": 6.26,
+ "max_drawdown_pct": 2.01,
+ "trades": 8,
+ "wins": 7.0,
+ "by_reason": {
+  "take_profit": 4,
+  "profit lock: up 6.3% >= 6%": 3,
+  "stop_loss": 1
+ },
+ "pnl_by_market": {
+  "ADATMN": 97920.0,
+  "BCHTMN": -66779.0,
+  "BNBTMN": 57886.0,
+  "ETHTMN": 28182.0,
+  "LTCTMN": 34213.0,
+  "PUMPTMN": 102810.0,
+  "USOONTMN": 39930.0,
+  "XAUTTMN": 18840.0
+ },
+ "seconds": 5
+}

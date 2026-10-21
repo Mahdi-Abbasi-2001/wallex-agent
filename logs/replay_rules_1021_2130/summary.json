@@ -1,0 +1,26 @@
+{
+ "mode": "rules",
+ "start": 1792346400,
+ "end": 1792605600,
+ "final_equity": 5123791,
+ "return_pct": 2.48,
+ "max_drawdown_pct": 3.3,
+ "trades": 10,
+ "wins": 5.0,
+ "by_reason": {
+  "stop_loss": 3,
+  "end_game_unwind": 3,
+  "take_profit": 2,
+  "max_hold_time": 2
+ },
+ "pnl_by_market": {
+  "PENGUTMN": -44233.0,
+  "PEPETMN": 116062.0,
+  "PUMPTMN": 38132.0,
+  "TRXTMN": -35662.0,
+  "USOONTMN": -51756.0,
+  "WLDTMN": 135176.0,
+  "XAUTTMN": -33927.0
+ },
+ "seconds": 8
+}

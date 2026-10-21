@@ -1,0 +1,4 @@
+requests>=2.31
+openai>=1.40
+pandas>=2.0
+websocket-client>=1.7

@@ -1,0 +1,14 @@
+.env
+__pycache__/
+data/*.csv
+*.log
+.venv/
+data/*
+!data/replay/
+data/replay/*
+!data/replay/spreads_*.json
+logs/state.json
+logs/KILL
+logs/*.tmp
+logs/test_trade_positions.json
+logs/*.out

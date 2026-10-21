@@ -1,0 +1,19 @@
+{
+ "mode": "rules",
+ "start": 1792346400,
+ "end": 1792605600,
+ "final_equity": 5093629,
+ "return_pct": 1.87,
+ "max_drawdown_pct": 1.46,
+ "trades": 3,
+ "wins": 3,
+ "by_reason": {
+  "end_game_unwind": 3
+ },
+ "pnl_by_market": {
+  "DOGETMN": 46071.0,
+  "SOLTMN": 33110.0,
+  "STMN": 14449.0
+ },
+ "seconds": 12
+}

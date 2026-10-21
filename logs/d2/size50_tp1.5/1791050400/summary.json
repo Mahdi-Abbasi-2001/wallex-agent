@@ -1,0 +1,19 @@
+{
+ "mode": "rules",
+ "start": 1790877600,
+ "end": 1791050400,
+ "final_equity": 5077231,
+ "return_pct": 1.54,
+ "max_drawdown_pct": 4.36,
+ "trades": 3,
+ "wins": 2,
+ "by_reason": {
+  "max_hold_time": 2,
+  "end_game_unwind": 1
+ },
+ "pnl_by_market": {
+  "ADATMN": 43216.0,
+  "HYPETMN": 34015.0
+ },
+ "seconds": 9
+}

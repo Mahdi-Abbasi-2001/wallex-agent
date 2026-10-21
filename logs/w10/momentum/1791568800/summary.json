@@ -1,0 +1,19 @@
+{
+ "mode": "rules",
+ "start": 1791309600,
+ "end": 1791568800,
+ "final_equity": 4746036,
+ "return_pct": -5.08,
+ "max_drawdown_pct": 5.08,
+ "trades": 3,
+ "wins": 0.0,
+ "by_reason": {
+  "stop_loss": 3
+ },
+ "pnl_by_market": {
+  "ADATMN": -89222.0,
+  "AVAXTMN": -75535.0,
+  "STMN": -89207.0
+ },
+ "seconds": 3
+}
