@@ -1,6 +1,6 @@
 """One minimum-size round trip through the bot's own order code, to verify order/fill fields before any strategy runs.
  python scripts/test_trade.py            -> shows what it would do (no orders)
- python scripts/test_trade.py --execute  -> buys the smallest sellable amount of USDTTMN, sells it back, prints raw order responses"""
+ python scripts/test_trade.py --execute  -> buys the smallest sellable amount of BTCTMN (or --market X), sells it back, prints raw order responses"""
 import json
 import sys
 import time
@@ -13,7 +13,7 @@ from agent.wallex_client import Wallex
 from bot.config import Config
 from bot.futures import SpotLive
 
-MARKET = "USDTTMN"
+MARKET = sys.argv[sys.argv.index("--market") + 1] if "--market" in sys.argv else "BTCTMN"   # USDTTMN is refused for the challenge account
 w = Wallex(); sl = SpotLive(w, Config(), path="logs/test_trade_positions.json")
 st = sl.meta[MARKET]["stats"]; bid, ask = float(st["bidPrice"]), float(st["askPrice"])
 # Smallest buy whose remainder, after a 0.3% fee possibly taken in the coin and rounding down to the step, is still above
