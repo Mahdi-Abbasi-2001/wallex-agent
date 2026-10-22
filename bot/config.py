@@ -49,6 +49,7 @@ class Config:
     # --- what the AI sees (chosen by ablation; "lean" = only what the rules do not already decide) ---
     ai_data: str = os.getenv("AI_DATA", "lean")             # lean | lean_bn (lean + Binance/USDT context) | full (old, every field + analyst + reflection)
     ai_max_tool_calls: int = _i("AI_MAX_TOOL_CALLS", 2)
+    ai_style: str = os.getenv("AI_STYLE", "balanced")       # balanced (buy the best candidate unless a red flag) | picky (no trade unless clearly good)
     min_ai_hold_s: int = _i("MIN_AI_HOLD_S", 4 * 3600)       # the AI may not close a position younger than this (stops/targets still work)
     # --- end game (hours before challenge_end) ---
     no_new_h: float = _f("NO_NEW_H", 2.0)                     # no new positions in the last 2 hours

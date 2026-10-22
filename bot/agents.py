@@ -23,14 +23,26 @@ TRADER_TASK = (" You make two SEPARATE decisions. "
     "(2) EXITS for positions you already hold: every position already has a stop-loss, a take-profit and a time limit managed by code, so the default is to HOLD. "
     "Propose a close ONLY if the uptrend itself is clearly broken (price below its 50-hour average and still falling, or BTC broke down hard). "
     "Being below the 20-hour average, small red or green fluctuations or a choppy 15-minute chart are NOT reasons to close. Positions younger than 4 hours cannot be closed by you.")
+PICKY_TASK = (" You make two SEPARATE decisions. "
+    "(1) NEW ENTRY: the default is NO TRADE. Buy only a candidate whose setup is clearly good, and before buying you MUST check it with the tools "
+    "(recent 15-minute or 1-hour candles, or the order book). Buy only if ALL hold: the dip has already turned up on the short-term candles "
+    "(a higher low or a rebound, not a chart still making new lows); BTC is not down over the last 6 hours; the spread is tight; and, when the market regime is "
+    "'range' rather than 'up', the rebound is clear. If you are unsure, skip: low conviction is not allowed, use medium or high only. Skipping is a good result. "
+    "(2) EXITS for positions you already hold: every position already has a stop-loss, a take-profit and a time limit managed by code, so the default is to HOLD. "
+    "Propose a close ONLY if the uptrend itself is clearly broken (price below its 50-hour average and still falling, or BTC broke down hard). "
+    "Positions younger than 4 hours cannot be closed by you.")
+PICKY_REVIEW = (' You are the independent risk reviewer of a proposed entry. Approve ONLY a clean pullback that has already turned up, with BTC not falling and a tight spread. '
+    'Veto anything doubtful: a dip still falling on short-term candles, BTC down over 6 hours, a range-bound market without a clear rebound, a wide spread, or a reason that does not '
+    'cite concrete evidence. Reply JSON {"approve":bool,"reason":str}.')
 TRADER_SCHEMA = ('{"opens":[{"market":str,"side":"long","conviction":"low|medium|high","reason":str}],'
                  '"closes":[{"id":int,"reason":str}],"note":str}. At most 1 new position per call. conviction sets the size: high = the full size the risk guard allows, '
                  'medium = 75%, low = 50%. Use high only when the setup, the trend and the market regime all agree.')
 
 
 class Brain:
-    def __init__(self, llm, log, mcp=None, max_tools=2):
-        self.llm, self.log, self.mcp, self.max_tools = llm, log, mcp, max_tools
+    def __init__(self, llm, log, mcp=None, max_tools=2, style="balanced"):
+        self.llm, self.log, self.mcp, self.max_tools, self.style = llm, log, mcp, max_tools, style
+        self.task = PICKY_TASK if style == "picky" else TRADER_TASK
 
     def _ask(self, role, system, payload, retries=2):
         user = json.dumps(payload, ensure_ascii=False, default=float)
@@ -51,7 +63,7 @@ class Brain:
 
     def trader(self, ctx):
         if self.mcp and hasattr(self.llm, "agent"):
-            sys = (RULES + TRADER_TASK + ' You may call the market-data tools (candles in any resolution; live also order book depth and latest trades) to check a candidate '
+            sys = (RULES + self.task + ' You may call the market-data tools (candles in any resolution; live also order book depth and latest trades) to check a candidate '
                    'before deciding. Use at most ' + str(self.max_tools) + ' tool calls. Then reply JSON ' + TRADER_SCHEMA)
             user = json.dumps(ctx, ensure_ascii=False, default=float); t0 = time.time(); calls = []
             try:
@@ -60,10 +72,11 @@ class Brain:
                 return out
             except Exception as e:
                 self.log.llm("trader", sys, user, None, error=repr(e), seconds=round(time.time() - t0, 2))
-        sys = RULES + TRADER_TASK + ' Reply JSON ' + TRADER_SCHEMA
+        sys = RULES + self.task + ' Reply JSON ' + TRADER_SCHEMA
         return self._ask("trader", sys, ctx)
 
     def reviewer(self, proposal, guard_note, ctx):
+        if self.style == "picky": return self._ask("reviewer", RULES + PICKY_REVIEW, {"proposal": proposal, "guard": guard_note, "context": ctx})
         sys = (RULES + ' You are the independent risk reviewer of a proposed entry. Approve by default. Veto ONLY for a concrete red flag: a breakdown rather than a pullback '
                '(e.g. deep below the 20-hour average with the 50-hour trend turning down), a crash in progress on the short-term candles, BTC falling hard right now, or a wide spread. '
                'A normal dip is the intended setup and is not a reason to veto. Reply JSON {"approve":bool,"reason":str}.')

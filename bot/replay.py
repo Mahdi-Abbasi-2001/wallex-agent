@@ -126,7 +126,7 @@ class ReplayBot(Bot):
         self.cand = HistCandles(h)
         if llm:
             from .agents import Brain
-            self.brain = Brain(llm, self.log, HistTools(h, m, lambda: self.sim), cfg.ai_max_tool_calls)
+            self.brain = Brain(llm, self.log, HistTools(h, m, lambda: self.sim), cfg.ai_max_tool_calls, cfg.ai_style)
         else: self.brain = RulesBrain()
         self.broker = PaperFutures(cfg)
         if ext: self.ext = ext
@@ -153,13 +153,13 @@ def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--days", type=float, default=3); ap.add_argument("--rules", action="store_true")
     ap.add_argument("--model", default=os.getenv("BOT_MODEL")); ap.add_argument("--out", default=None); ap.add_argument("--end", type=int, default=None)
     ap.add_argument("--entry", default="pullback"); ap.add_argument("--tp", type=float, default=2.0); ap.add_argument("--trail", action="store_true"); ap.add_argument("--decide", type=int, default=1800)
-    ap.add_argument("--gate", default="strict"); ap.add_argument("--maxpos", type=int, default=2); ap.add_argument("--dlcap", type=float, default=0.01); ap.add_argument("--fetch-only", action="store_true"); ap.add_argument("--data", default="lean"); ap.add_argument("--posfrac", type=float, default=0.33)
+    ap.add_argument("--gate", default="strict"); ap.add_argument("--maxpos", type=int, default=2); ap.add_argument("--dlcap", type=float, default=0.01); ap.add_argument("--fetch-only", action="store_true"); ap.add_argument("--data", default="lean"); ap.add_argument("--posfrac", type=float, default=0.33); ap.add_argument("--style", default="balanced")
     a = ap.parse_args(); load_env()
     end = a.end or int(time.time()) // 3600 * 3600; start = int(end - a.days * 86400)
     out = a.out or f"logs/replay_{'rules' if a.rules else 'ai'}_{time.strftime('%m%d_%H%M', time.gmtime(end + 12600))}"
     import shutil; shutil.rmtree(out, ignore_errors=True); os.makedirs(out, exist_ok=True)
     cfg = Config(log_dir=out, state_file=f"{out}/state.json", kill_file=f"{out}/KILL", challenge_end=end + 60,
-                 entry_mode=a.entry, tp_mult=a.tp, trail=a.trail, decide_s=a.decide, regime_gate=a.gate, max_positions=a.maxpos, daily_loss_cap=a.dlcap, ai_data=a.data, max_pos_frac=a.posfrac)
+                 entry_mode=a.entry, tp_mult=a.tp, trail=a.trail, decide_s=a.decide, regime_gate=a.gate, max_positions=a.maxpos, daily_loss_cap=a.dlcap, ai_data=a.data, max_pos_frac=a.posfrac, ai_style=a.style)
     h, m, spreads = load(cfg, start, end)
     if a.fetch_only: load_external(cfg, start, end, m); print("fetched", start, end); return
     bot = ReplayBot(cfg, h, m, spreads, None if a.rules else LLM(model=a.model), HistExternal(*load_external(cfg, start, end, m)))

@@ -64,7 +64,7 @@ class Bot:
         if llm:
             try: mcp = WallexMCP()
             except Exception as e: self.log.decision("mcp_unavailable", error=repr(e))
-        self.brain = Brain(llm, self.log, mcp, cfg.ai_max_tool_calls) if llm else None
+        self.brain = Brain(llm, self.log, mcp, cfg.ai_max_tool_calls, cfg.ai_style) if llm else None
         self.last_quotes = {}
 
     # ---- helpers ----
@@ -194,6 +194,8 @@ class Bot:
         self.st["last_decide"] = now
 
     def try_open(self, o, cands, positions, eq, ctx, now):
+        if self.cfg.ai_style == "picky" and str(o.get("conviction", "")).lower() not in ("medium", "high"):
+            self.log.decision("reject", stage="picky_rule", proposal=o, reason="picky style: low or missing conviction means skip"); return
         cand = next((c for c in cands if c["market"] == o.get("market") and c["side"] == o.get("side")), None)
         if not cand: self.log.decision("reject", stage="candidate", proposal=o, reason="not in candidate list"); return
         prop = {"market": cand["market"], "side": cand["side"], "entry": cand["entry"], "stop_pct": cand["stop_pct"], "take_pct": cand["take_pct"], "lev": 1, "conviction": o.get("conviction", "low")}
