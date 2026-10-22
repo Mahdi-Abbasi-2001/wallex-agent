@@ -40,6 +40,10 @@ assert g.check_open({**base, "market": "SOLTMN", "conviction": "medium"}, 5_000_
 assert g.check_open({**base, "market": "SOLTMN", "conviction": "low"}, 5_000_000, [], now)[0].exposure == 820_000
 assert g.check_open({**base, "market": "SOLTMN", "conviction": "huge"}, 5_000_000, [], now)[0].exposure == 820_000    # unknown -> smallest
 
+# --- close-out mode blocks every new entry
+from dataclasses import replace
+g2 = RiskGuard(replace(cfg, no_new_entries=True), st); assert g2.check_open({**base, "market": "XRPTMN"}, 5_000_000, [], now)[1] == "new entries disabled (close-out mode)"
+
 # --- drawdown halt / profit lock / daily loss
 g, st = guard(); assert g.update_equity(4_700_000, now)["halt"] and st["halted"] and g.check_open(base, 4_700_000, [], now)[0] is None
 g, st = guard(); assert g.update_equity(5_320_000, now)["halt"] and "profit lock" in st["halt_reason"]

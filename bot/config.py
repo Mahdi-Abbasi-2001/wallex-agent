@@ -38,7 +38,8 @@ class Config:
     daily_loss_cap: float = _f("DAILY_LOSS_CAP", 0.01)
     max_drawdown: float = _f("MAX_DRAWDOWN", 0.05)
     lock_reduce_at: float = _f("LOCK_REDUCE_AT", 0.03)       # up this much: only 1 position at a time
-    lock_flat_at: float = _f("LOCK_FLAT_AT", 0.06)           # up this much: close everything, stop trading
+    lock_flat_at: float = _f("LOCK_FLAT_AT", 0.06)
+    no_new_entries: bool = os.getenv("NO_NEW_ENTRIES", "0") == "1"   # close-out mode: manage open positions only, never buy           # up this much: close everything, stop trading
     cooldown_s: int = _i("COOLDOWN_S", 4 * 3600)
     max_hold_s: int = _i("MAX_HOLD_S", 36 * 3600)
     entry_mode: str = os.getenv("ENTRY_MODE", "pullback")   # momentum | pullback | lead

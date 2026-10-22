@@ -153,6 +153,7 @@ class Bot:
             except Exception: ext_all = {}
         reg, cands = candidates(feats, self.last_quotes, cfg, st["params"].get("min_score", 1.0), ext_all)
         cands = [c for c in cands if c["market"] not in st.get("refused", [])]
+        if cfg.no_new_entries: cands = []                              # close-out mode: the AI only reviews open positions
         feasible = [c for c in cands if c["stop_pct"] * cfg.min_exposure <= cfg.max_risk_pct * eq]
         if len(feasible) < len(cands): self.log.decision("filtered", dropped=[c["market"] for c in cands if c not in feasible], why="min position size makes the stop too risky for this account")
         cands = feasible

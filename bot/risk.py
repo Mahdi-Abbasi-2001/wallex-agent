@@ -57,6 +57,7 @@ class RiskGuard:
         """p: dict(market, side, entry, stop_pct, take_pct, lev, conviction). Returns (Sized|None, reason).
         Size = guard maximum x conviction (low 50%, medium 75%, high 100%); the AI can shrink a position, never enlarge it."""
         cfg, st = self.cfg, self.st
+        if cfg.no_new_entries: return None, "new entries disabled (close-out mode)"
         ph = phase(cfg, now)
         if ph != "trade": return None, f"phase={ph}: no new positions"
         if st["halted"]: return None, f"halted: {st['halt_reason']}"
