@@ -1,6 +1,6 @@
 """Sanity tests for the contest simulator (toy data). python tests/test_contest.py"""
 import sys
-sys.path.insert(0, ".")
+sys.path.insert(0, "research")
 import numpy as np, pandas as pd
 from contest.agents import Agent, HoldAll
 from contest.fills import BidAskFill, BookFill, MidFill

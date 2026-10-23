@@ -25,7 +25,7 @@ Wallex data → rule engine (≤5 candidates) → AI trader (+ Wallex MCP) → r
 | `scripts/` | backtest batches (`run_variants.py`, `run_2day.py`, `summarize.py`), `test_trade.py`, `deploy.sh` |
 | `tests/test_bot.py` | unit tests: risk guard, fees, stops, liquidation, end game, sell ladder, close-out mode, picky style, full pipeline |
 
-The other Python files in the repository root and `contest/` are the earlier research (strategy screening and a contest simulator); the trading bot does not use them.
+`research/` holds the earlier research (strategy screening scripts, a contest simulator, notes in `research/PLAYBOOK.md`); the trading bot does not use it. Run its scripts from the repository root with `PYTHONPATH=. python research/<script>.py`. `agent/` provides the bot's Wallex REST client and LLM client; its other modules are from the first prototype.
 
 ## Setup
 

@@ -1,7 +1,7 @@
 """Smoke test: every scenario builds an agent that runs through the simulator. python tests/test_playbook.py"""
 import itertools
 import sys
-sys.path.insert(0, ".")
+sys.path.insert(0, "research")
 import numpy as np
 import strat_search as S
 from contest.fills import BidAskFill
