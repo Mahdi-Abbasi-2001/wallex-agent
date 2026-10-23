@@ -76,15 +76,16 @@ The idea comes from the author's manual price-action trading in forex: **buy a h
 
 **Position size** = the smallest of (a) 33% of equity, (b) the amount that loses 1.5% of equity if the stop is hit, (c) free cash minus a 3% fee buffer, then × the AI's conviction (0.5 / 0.75 / 1.0). The AI can only make a position smaller.
 
-**Account limits** (defaults in `bot/config.py`; live overrides in §8):
+**Account limits** (code defaults in `bot/config.py`; the live run used the values in the last column, set as environment variables and recorded in every start record, see §8):
 
-| Limit | Default |
-|---|---|
-| Open positions | 2 (live: 3), one new position per decision cycle |
-| Leverage / shorting | none (spot only) |
-| Daily loss cap | 1% (stops new entries for the day) |
-| Drawdown halt | 5% from peak (sell everything, stop) |
-| Profit lock | +3%: one position at a time; +6%: sell everything, stop |
+| Limit | Code default | Live run |
+|---|---|---|
+| Open positions | 2 | 3 (one new position per decision cycle) |
+| Leverage / shorting | none (spot only) | none |
+| Per-trade risk | 1.5% of equity at the stop | same |
+| Daily loss cap | 1% | 10% |
+| Drawdown halt | 5% from peak (sell everything, stop) | 10% from peak |
+| Profit lock | +3%: one position at a time; +6%: sell everything, stop | same |
 | Re-entry cooldown | 4 hours per market |
 | AI outage | no new entries; protection continues |
 | Kill switch | file `KILL` in the log folder: sell everything and stop |
@@ -153,15 +154,7 @@ python -m bot --mode shadow                             # live prices, paper ord
 - **Code that traded:** commit `188ffe8` (tag `challenge-live`); the bot's start records in the live log show this commit and its source fingerprint. Later commits only add backtest options and an optional `AI_STYLE=picky`, which was not used live.
 - Live logs: `logs/live/` in this repository (decisions, AI calls, equity).
 
-Setting changes during the challenge (all applied as environment variables and logged in each start record):
-
-| Time (Tehran) | Change | Reason |
-|---|---|---|
-| Thu 1405/07/30 03:42 | Live start: 2 positions, 1% daily cap, 5% drawdown halt | |
-| Thu 10:54 / 10:55 | Daily loss cap 10%, drawdown halt 10% | the 1% cap (which counts open positions at market value) had stopped all entries for 13 hours |
-| Thu 11:12 | Max positions 3 | more chances for the AI while the daily cap was relaxed |
-| Thu 17:53 | Close-out mode (`NO_NEW_ENTRIES=1`) | manage the three open positions only |
-| Fri 1405/08/01 14:31 | End moved to Mon 1405/08/04 23:50; time limit 240 h | the organizers extended the challenge to Monday |
+**Live risk settings and why.** The daily loss cap counts open positions at market value. At the 1% default it stopped all new entries for 13 hours right after the start, so the live run used a 10% daily cap and a 10% drawdown halt, and 3 open positions. What stayed bounded: per-trade risk of 1.5% of equity at the stop, a stop on every position, the 33% position cap, the profit lock, the kill switch and the end-of-challenge sell-off. From Thursday 17:53 the bot ran in close-out mode (`NO_NEW_ENTRIES=1`): no new buys, open positions keep their stops, targets and the profit lock. On Friday 1405/08/01 the organizers extended the challenge to Monday, so the end time was moved to 23:50 and the time limit raised to 240 h. The exact values in force at each start are in the start records in `logs/live/`.
 
 ## 9. Limitations
 
