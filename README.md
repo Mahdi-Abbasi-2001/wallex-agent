@@ -1,29 +1,81 @@
-# Wallex Agentic-AI trading bot (spot, long-only, TMN markets)
+# Wallex Agentic Trading Bot
 
-An LLM-driven trading engine for the Starcoach x Wallex hackathon. A rule engine proposes candidates, four LLM roles decide (BoxAPI), a hard risk guard approves, and every decision is logged.
+An AI trading agent for Wallex spot toman markets, built for the Starcoach × Wallex Agentic AI hackathon by Mahdi Abbasi.
 
-## Pipeline
-`Wallex quotes + 1h candles -> signal engine (momentum / trend / ATR / BTC regime) -> LLM analyst -> LLM trader (picks from candidates, or "no trade") -> hard risk guard -> LLM risk reviewer -> dry-run -> position with native stop-loss/take-profit -> logs`
+A rule engine finds healthy pullbacks in uptrending coins, `gpt-6-luna` (via BoxAPI) judges each candidate using Wallex MCP tools and sets the size, an independent AI reviewer can veto, and a hard risk guard in code approves and executes through the Wallex API. Every decision is logged with its reason.
 
-* `bot/signals.py` - features, BTC regime, ranked candidates (strongest relative momentum above its trend; cash in a down regime).
-* `bot/agents.py` - analyst, trader, reviewer, reflection (tunes `min_score` / `max_lev` within bounds every 8 h).
-* `bot/risk.py` - hard limits: spot only (the challenge account has no margin/leverage), <= 3 positions, each <= 33% of equity, per-trade stop risk <= 1.5% of equity, every position has a stop/take enforced every 30 s, daily loss cap -2%, drawdown halt -5%, profit lock (+3% one position, +6% flat), cooldowns, end-game phases.
-* `bot/futures.py` - `SpotLive` (real Wallex spot orders: marketable limit entry/exit, market fallback) and `PaperFutures` (paper spot broker with the same fee model, used for shadow mode and tests).
-* `bot/runner.py` - main loop. The LLM can never place an order; if it is down the bot only manages and exits positions.
-* End game: no new positions 6 h before the end, staggered unwind from 3 h before, forced market close 45 min before, then everything is TMN.
+**Full description of the strategy, AI use, risk management, backtests and the live run: [STRATEGY.md](STRATEGY.md).**
 
-## Run
+## How it works
+
+```
+Wallex data → rule engine (≤5 candidates) → AI trader (+ Wallex MCP) → risk guard → AI reviewer → executor (Wallex API) → logs
+```
+
+| File | Role |
+|---|---|
+| `bot/signals.py` | price rules: BTC gate, uptrend, pullback, entry zone, ranking, stop/target from volatility |
+| `bot/agents.py` | AI roles: trader (entry, conviction, exits) and reviewer |
+| `bot/mcp.py` | Wallex MCP client with a read-only allow-list |
+| `bot/risk.py` | hard limits: size, positions, loss caps, drawdown halt, profit lock, end-game phases |
+| `bot/futures.py` | `SpotLive` (real Wallex orders: marketable limit entries, stepped limit sells) and `PaperFutures` (paper broker for shadow mode and backtests) |
+| `bot/runner.py` | main loop: prices and stops every 30 s, decisions every 30 min, kill switch, health endpoint |
+| `bot/replay.py` | backtest: replays real Wallex minute data through the same code |
+| `bot/config.py` | every setting, overridable by environment variable |
+| `scripts/` | backtest batches (`run_variants.py`, `run_2day.py`, `summarize.py`), `test_trade.py`, `deploy.sh` |
+| `tests/test_bot.py` | unit tests: risk guard, fees, stops, liquidation, end game, sell ladder, close-out mode, picky style, full pipeline |
+
+The other Python files in the repository root and `contest/` are the earlier research (strategy screening and a contest simulator); the trading bot does not use them.
+
+## Setup
+
 ```bash
 pip install -r requirements.txt
-cp .env.example .env            # fill LLM_PROVIDER=boxapi, BOXAPI_KEY, BOXAPI_MODEL, WALLEX_API_KEY, WALLEX_SUB_ACCOUNT_CLIENT_ID
-python -m bot --mode shadow     # real prices, simulated positions (default, safe)
-CONFIRM_LIVE=yes python -m bot --mode live --confirm-live   # real positions
-touch logs/KILL                 # kill switch: closes everything and stops
-python tests/test_bot.py        # risk guard / paper broker / end game / pipeline tests
+cp .env.example .env
 ```
-Deploy on Liara: `liara deploy` (Dockerfile + `liara.json`, logs on a persistent disk at `/data`).
 
-## Logs (deliverables)
-* `logs/decisions.jsonl` - one record per decision: candidates seen, the AI's reason, the risk-guard verdict, reviewer verdict, dry-run (fees, liquidation price), open/close with price and PnL, halts, errors.
-* `logs/llm_calls.jsonl` - full prompt and reply of every LLM call.
-* `logs/equity.jsonl` - equity, return and drawdown every tick.
+`.env` needs:
+
+```
+LLM_PROVIDER=boxapi
+BOXAPI_KEY=...
+BOXAPI_BASE_URL=https://ai.boxapi.ir/ai/v1
+BOXAPI_MODEL=gpt-6-luna
+WALLEX_API_KEY=...                  # the challenge (sub-)account's key
+WALLEX_SUB_ACCOUNT_CLIENT_ID=...    # the sub-account's client id (GET /sub-accounts)
+```
+
+## Run
+
+```bash
+python tests/test_bot.py                                  # unit tests
+python -m bot.replay --days 3 --rules --end 1792605600    # rules-only backtest of one 3-day window
+python -m bot.replay --days 3 --model gpt-6-luna --end 1792605600   # same window with the AI
+python scripts/run_variants.py                            # 10 three-day windows × rule-set variants
+python scripts/run_2day.py                                # 15 two-day windows
+python -m bot --mode shadow                               # live prices, paper orders
+CONFIRM_LIVE=yes python -m bot --mode live --confirm-live # real orders
+touch logs/KILL                                           # kill switch: sell everything and stop
+```
+
+Useful settings (environment variables): `CHALLENGE_END` (ISO time), `MAX_POSITIONS`, `DAILY_LOSS_CAP`, `MAX_DRAWDOWN`, `NO_NEW_ENTRIES=1` (close-out mode), `MAX_HOLD_S`, `AI_STYLE` (`balanced` or `picky`), `BOT_MODEL`, `LOG_DIR`. See `bot/config.py` for all.
+
+## Deploy (Liara)
+
+`Dockerfile` + `liara.json` (port 8000, persistent disk at `/data`). Set the keys above and `BOT_MODE=shadow` (or `BOT_MODE=live`, `BOT_FLAGS=--confirm-live`, `CONFIRM_LIVE=yes`) as app environment variables, then:
+
+```bash
+bash scripts/deploy.sh      # records the git commit in the image and deploys
+```
+
+`GET /health` returns the last tick time, equity, drawdown, phase and open positions.
+
+## Logs
+
+| File | Content |
+|---|---|
+| `decisions.jsonl` | one record per event: start (git commit, source fingerprint, config), each cycle's candidates, MCP research, AI proposal and reason, reviewer verdict, risk-guard verdict, fills with order latency, closes with reason and P&L |
+| `llm_calls.jsonl` | every model call: full prompt, reply, latency, tokens |
+| `equity.jsonl` | equity, return and drawdown over time |
+
+The live run's logs are in `logs/live/`. The code that traded live is commit `188ffe8` (tag `challenge-live`).
